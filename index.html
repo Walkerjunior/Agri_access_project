@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgriAccess</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f0f9f0;
+    }
+
+    header {
+      background-color: #2e7d32;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    main {
+      padding: 1rem;
+    }
+
+    .categories, .products, .order {
+      margin-bottom: 2rem;
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .category-grid button,
+    footer nav button,
+    #place-order {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .category-grid button:hover,
+    footer nav button:hover,
+    #place-order:hover {
+      background-color: #388e3c;
+    }
+
+    .product-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .product-card {
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 1rem;
+    }
+
+    .product-card h3 {
+      margin: 0 0 0.5rem 0;
+    }
+
+    .product-card button {
+      background-color: #ff9800;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: #c8e6c9;
+      padding: 0.5rem;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+    }
+
+    footer nav {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    ul#order-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul#order-list li {
+      background: #ffffff;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="app-title">AgriAccess</h1>
+    <p id="offline-label">Offline support enabled</p>
+  </header>
+
+  <main>
+    <section class="categories">
+      <h2 id="category-title">Product Categories</h2>
+      <div class="category-grid">
+        <button data-en="Seeds" data-sw="Mbegu">Seeds</button>
+        <button data-en="Fertilizers" data-sw="Mbolea">Fertilizers</button>
+        <button data-en="Pesticides" data-sw="Dawa ya Wadudu">Pesticides</button>
+        <button data-en="Farm Tools" data-sw="Vifaa vya shambani">Tools</button>
+      </div>
+    </section>
+
+    <section class="products">
+      <h2 id="products-title">Available Products</h2>
+      <div class="product-list">
+        <!-- Product cards will be inserted here by JavaScript -->
+      </div>
+    </section>
+
+    <section class="order">
+      <h2 id="order-title">Your Order</h2>
+      <ul id="order-list"></ul>
+      <button id="place-order" data-en="Place Order" data-sw="Weka Agizo">Place Order</button>
+    </section>
+  </main>
+
+  <footer>
+    <nav>
+      <button data-en="Home" data-sw="Nyumbani">🏠 <span>Home</span></button>
+      <button data-en="Location" data-sw="Mahali">📍 <span>Location</span></button>
+      <button onclick="toggleLanguage()">🌐 <span id="lang-label">Swahili</span></button>
+      <button data-en="Knowledge" data-sw="Maarifa">📚 <span>Knowledge</span></button>
+    </nav>
+  </footer>
+
+  <script>
+    let language = localStorage.getItem('agriaccess-lang') || 'en';
+
+    const products = [
+      { id: 1, name: { en: "Hybrid Maize Seeds", sw: "Mbegu za Mahindi ya Kisasa" }, price: 10 },
+      { id: 2, name: { en: "Urea Fertilizer", sw: "Mbolea ya Urea" }, price: 5 },
+      { id: 3, name: { en: "Organic Pesticide", sw: "Dawa ya Wadudu Asilia" }, price: 8 },
+      { id: 4, name: { en: "Hand Hoe", sw: "Jembe la Mkono" }, price: 15 }
+    ];
+
+    const productList = document.querySelector(".product-list");
+    const orderList = document.getElementById("order-list");
+    let order = JSON.parse(localStorage.getItem("order")) || [];
+
+    function loadProducts() {
+      productList.innerHTML = "";
+      products.forEach(product => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
+          <h3>${product.name[language]}</h3>
+          <p>Price: $${product.price}</p>
+          <button onclick="addToOrder(${product.id})">${language === 'en' ? 'Add to Order' : 'Ongeza kwa Agizo'}</button>
+        `;
+        productList.appendChild(card);
+      });
+    }
+
+    function addToOrder(id) {
+      const product = products.find(p => p.id === id);
+      order.push(product);
+      updateOrderList();
+      localStorage.setItem("order", JSON.stringify(order));
+    }
+
+    function updateOrderList() {
+      orderList.innerHTML = "";
+      order.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = `${item.name[language]} - $${item.price}`;
+        orderList.appendChild(li);
+      });
+    }
+
+    document.getElementById("place-order").addEventListener("click", () => {
+      alert(language === 'en' ? "Order placed successfully!" : "Agizo limewekwa kwa mafanikio!");
+      order = [];
+      updateOrderList();
+      localStorage.removeItem("order");
+    });
+
+    function toggleLanguage() {
+      language = language === 'en' ? 'sw' : 'en';
+      localStorage.setItem('agriaccess-lang', language);
+      document.getElementById("lang-label").innerText = language === 'en' ? 'Swahili' : 'English';
+
+      document.getElementById("category-title").innerText = language === 'en' ? 'Product Categories' : 'Aina za Bidhaa';
+      document.getElementById("products-title").innerText = language === 'en' ? 'Available Products' : 'Bidhaa Zinazopatikana';
+      document.getElementById("order-title").innerText = language === 'en' ? 'Your Order' : 'Agizo Lako';
+      document.getElementById("place-order").innerText = document.getElementById("place-order").dataset[language];
+
+      document.querySelectorAll("button[data-en]").forEach(btn => {
+        const label = btn.dataset[language];
+        if (btn.querySelector("span")) {
+          btn.querySelector("span").innerText = label;
+        } else {
+          btn.innerText = label;
+        }
+      });
+
+      loadProducts();
+      updateOrderList();
+    }
+
+    window.addEventListener("load", () => {
+      toggleLanguage();
+    });
+  </script>
+</body>
+</html>
